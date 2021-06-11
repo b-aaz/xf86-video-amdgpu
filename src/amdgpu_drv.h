@@ -375,6 +375,7 @@ extern void AMDGPUResetVideo(ScrnInfoPtr pScrn);
 extern xf86CrtcPtr amdgpu_pick_best_crtc(ScrnInfoPtr pScrn,
 					 Bool consider_disabled,
 					 int x1, int x2, int y1, int y2);
+extern RRCrtcPtr amdgpu_randr_crtc_covering_drawable(DrawablePtr pDraw);
 
 extern AMDGPUEntPtr AMDGPUEntPriv(ScrnInfoPtr pScrn);
 
