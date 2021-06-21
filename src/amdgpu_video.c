@@ -172,13 +172,16 @@ static RRCrtcPtr
 amdgpu_crtc_covering_box(ScreenPtr pScreen, BoxPtr box, Bool screen_is_xf86_hint)
 {
 	rrScrPrivPtr pScrPriv;
-	RRCrtcPtr crtc, best_crtc;
+	RRCrtcPtr crtc, best_crtc, primary_crtc;
 	int coverage, best_coverage;
 	int c;
 	BoxRec crtc_box, cover_box;
+	RROutputPtr primary_output;
 
 	best_crtc = NULL;
 	best_coverage = 0;
+	primary_crtc = NULL;
+	primary_output = NULL;
 
 	if (!dixPrivateKeyRegistered(rrPrivKey))
 		return NULL;
@@ -187,6 +190,10 @@ amdgpu_crtc_covering_box(ScreenPtr pScreen, BoxPtr box, Bool screen_is_xf86_hint
 
 	if (!pScrPriv)
 		return NULL;
+
+	primary_output = RRFirstOutput(pScreen);
+	if (primary_output && primary_output->crtc)
+		primary_crtc = primary_output->crtc->devPrivate;
 
 	for (c = 0; c < pScrPriv->numCrtcs; c++) {
 		crtc = pScrPriv->crtcs[c];
@@ -198,7 +205,8 @@ amdgpu_crtc_covering_box(ScreenPtr pScreen, BoxPtr box, Bool screen_is_xf86_hint
 		amdgpu_crtc_box(crtc, &crtc_box);
 		amdgpu_box_intersect(&cover_box, &crtc_box, box);
 		coverage = amdgpu_box_area(&cover_box);
-		if (coverage > best_coverage) {
+		if (coverage > best_coverage ||
+		   (crtc == primary_crtc && coverage == best_coverage)) {
 			best_crtc = crtc;
 			best_coverage = coverage;
 		}
