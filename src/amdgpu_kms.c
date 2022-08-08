@@ -2046,35 +2046,33 @@ Bool AMDGPUScreenInit_KMS(ScreenPtr pScreen, int argc, char **argv)
 	}
 #endif
 
-	if (!pScreen->isGPU) {
-		if (xorgGetVersion() >= XORG_VERSION_NUMERIC(1,18,3,0,0))
-			value = info->use_glamor;
-		else
-			value = FALSE;
-		from = X_DEFAULT;
+	if (xorgGetVersion() >= XORG_VERSION_NUMERIC(1,18,3,0,0))
+		value = info->use_glamor;
+	else
+		value = FALSE;
+	from = X_DEFAULT;
 
-		if (info->use_glamor) {
-			if (xf86GetOptValBool(info->Options, OPTION_DRI3, &value))
-				from = X_CONFIG;
+	if (info->use_glamor) {
+		if (xf86GetOptValBool(info->Options, OPTION_DRI3, &value))
+			from = X_CONFIG;
 
-			if (xf86GetOptValInteger(info->Options, OPTION_DRI, &driLevel) &&
-			    (driLevel == 2 || driLevel == 3)) {
-				from = X_CONFIG;
-				value = driLevel == 3;
-			}
+		if (xf86GetOptValInteger(info->Options, OPTION_DRI, &driLevel) &&
+				(driLevel == 2 || driLevel == 3)) {
+			from = X_CONFIG;
+			value = driLevel == 3;
 		}
-
-		if (value) {
-			value = amdgpu_sync_init(pScreen) &&
-				amdgpu_present_screen_init(pScreen) &&
-				amdgpu_dri3_screen_init(pScreen);
-
-			if (!value)
-				from = X_WARNING;
-		}
-
-		xf86DrvMsg(pScrn->scrnIndex, from, "DRI3 %sabled\n", value ? "en" : "dis");
 	}
+
+	if (value) {
+		value = amdgpu_sync_init(pScreen) &&
+			amdgpu_present_screen_init(pScreen) &&
+			amdgpu_dri3_screen_init(pScreen);
+
+		if (!value)
+			from = X_WARNING;
+	}
+
+	xf86DrvMsg(pScrn->scrnIndex, from, "DRI3 %sabled\n", value ? "en" : "dis");
 
 	pScrn->vtSema = TRUE;
 	xf86SetBackingStore(pScreen);
