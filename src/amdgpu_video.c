@@ -126,7 +126,7 @@ amdgpu_crtc_covering_box(ScreenPtr pScreen, BoxPtr box, Bool screen_is_xf86_hint
 
 	primary_output = RRFirstOutput(pScreen);
 	if (primary_output && primary_output->crtc)
-		primary_crtc = primary_output->crtc->devPrivate;
+		primary_crtc = primary_output->crtc;
 
 	for (c = 0; c < pScrPriv->numCrtcs; c++) {
 		crtc = pScrPriv->crtcs[c];
