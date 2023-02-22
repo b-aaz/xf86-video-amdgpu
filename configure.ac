@@ -23,7 +23,7 @@
 # Initialize Autoconf
 AC_PREREQ([2.60])
 AC_INIT([xf86-video-amdgpu],
-        [22.0.0],
+        [23.0.0],
         [https://gitlab.freedesktop.org/xorg/driver/xf86-video-amdgpu/-/issues],
         [xf86-video-amdgpu])
 
