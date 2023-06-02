@@ -1123,6 +1123,10 @@ static int drmmode_crtc_push_cm_prop(xf86CrtcPtr crtc,
 	void *blob_data = NULL;
 	int ret;
 
+	if (!drmmode_cm_prop_supported(drmmode, cm_prop_index)) {
+		return BadName;
+	}
+
 	switch (cm_prop_index) {
 	case CM_GAMMA_LUT:
 		/* Calculate the expected size of value in bytes */
@@ -1227,7 +1231,7 @@ drmmode_crtc_gamma_do_set(xf86CrtcPtr crtc, uint16_t *red, uint16_t *green,
 	int ret;
 
 	/* Use legacy if no support for non-legacy gamma */
-	if (!drmmode_cm_enabled(drmmode_crtc->drmmode)) {
+	if (!drmmode_cm_prop_supported(drmmode_crtc->drmmode, CM_GAMMA_LUT)) {
 		drmModeCrtcSetGamma(pAMDGPUEnt->fd,
 				    drmmode_crtc->mode_crtc->crtc_id,
 				    size, red, green, blue);
@@ -1566,7 +1570,7 @@ static void drmmode_load_cursor_argb(xf86CrtcPtr crtc, CARD32 * image)
 	uint32_t *ptr;
 
 	if ((crtc->scrn->depth != 24 && crtc->scrn->depth != 32) ||
-	    drmmode_cm_enabled(&info->drmmode))
+	    drmmode_cm_prop_supported(&info->drmmode, CM_GAMMA_LUT))
 		apply_gamma = FALSE;
 
 	if (drmmode_crtc->cursor &&
@@ -1847,7 +1851,8 @@ static void drmmode_crtc_destroy(xf86CrtcPtr crtc)
 	/* Free LUTs and CTM */
 	free(drmmode_crtc->gamma_lut);
 	free(drmmode_crtc->degamma_lut);
-	free(drmmode_crtc->ctm);
+	if (drmmode_crtc->ctm != NULL)
+		free(drmmode_crtc->ctm);
 
 	free(drmmode_crtc);
 	crtc->driver_private = NULL;
@@ -1908,26 +1913,24 @@ void drmmode_crtc_hw_id(xf86CrtcPtr crtc)
 static void drmmode_crtc_cm_init(int drm_fd, xf86CrtcPtr crtc)
 {
 	drmmode_crtc_private_ptr drmmode_crtc = crtc->driver_private;
-	drmmode_ptr drmmode = drmmode_crtc->drmmode;
 	int i;
 
-	if (!drmmode_cm_enabled(drmmode))
-		return;
-
 	/* Init CTM to identity. Values are in S31.32 fixed-point format */
-	drmmode_crtc->ctm = calloc(1, sizeof(*drmmode_crtc->ctm));
-	if (!drmmode_crtc->ctm) {
-		xf86DrvMsg(crtc->scrn->scrnIndex, X_ERROR,
-			   "Memory error initializing CTM for CRTC%d",
-			   drmmode_get_crtc_id(crtc));
-		return;
+	if (drmmode_cm_prop_supported(drmmode_crtc->drmmode, CM_CTM)) {
+		drmmode_crtc->ctm = calloc(1, sizeof(*drmmode_crtc->ctm));
+		if (!drmmode_crtc->ctm) {
+			xf86DrvMsg(crtc->scrn->scrnIndex, X_ERROR,
+				"Memory error initializing CTM for CRTC%d",
+				drmmode_get_crtc_id(crtc));
+			return;
+		}
+
+		drmmode_crtc->ctm->matrix[0] = drmmode_crtc->ctm->matrix[4] =
+			drmmode_crtc->ctm->matrix[8] = (uint64_t)1 << 32;
 	}
 
-	drmmode_crtc->ctm->matrix[0] = drmmode_crtc->ctm->matrix[4] =
-		drmmode_crtc->ctm->matrix[8] = (uint64_t)1 << 32;
-
 	/* Push properties to reset properties currently in hardware */
-	for (i = 0; i < CM_GAMMA_LUT; i++) {
+	for (i = CM_DEGAMMA_LUT; i <= CM_GAMMA_LUT; i++) {
 		if (drmmode_crtc_push_cm_prop(crtc, i))
 			xf86DrvMsg(crtc->scrn->scrnIndex, X_ERROR,
 				   "Failed to initialize color management "
@@ -2419,14 +2422,13 @@ static void drmmode_output_create_resources(xf86OutputPtr output)
 		}
 	}
 
-	/* Do not configure cm properties on output if there's no support. */
-	if (!drmmode_cm_enabled(drmmode_output->drmmode))
-		return;
-
 	drmmode_crtc = output->crtc ? output->crtc->driver_private : NULL;
 
-	for (i = 0; i < CM_NUM_PROPS; i++)
-		rr_configure_and_change_cm_property(output, drmmode_crtc, i);
+	for (i = 0; i < CM_NUM_PROPS; i++) {
+		if (drmmode_cm_prop_supported(drmmode_output->drmmode ,i))
+			rr_configure_and_change_cm_property(output,
+							    drmmode_crtc, i);
+	}
 }
 
 static void
@@ -2458,6 +2460,10 @@ drmmode_output_set_property(xf86OutputPtr output, Atom property,
 	if (cm_prop_index >= 0 && cm_prop_index < CM_DEGAMMA_LUT_SIZE) {
 		if (!output->crtc)
 			return FALSE;
+		if (!drmmode_cm_prop_supported(drmmode_output->drmmode,
+					       cm_prop_index))
+			return FALSE;
+
 		if (drmmode_crtc_stage_cm_prop(output->crtc, cm_prop_index,
 					       value))
 			return FALSE;
@@ -2530,7 +2536,13 @@ static Bool drmmode_output_get_property(xf86OutputPtr output, Atom property)
 	cm_prop_id = get_cm_enum_from_str(NameForAtom(property));
 	if (output->crtc && cm_prop_id != CM_INVALID_PROP) {
 		drmmode_crtc = output->crtc->driver_private;
-
+		if (!drmmode_cm_prop_supported(drmmode_crtc->drmmode,
+					       cm_prop_id)) {
+			xf86DrvMsg(output->scrn->scrnIndex, X_ERROR,
+				   " %s color property not supported\n",
+				   NameForAtom(property));
+			return FALSE;
+		}
 		ret = rr_configure_and_change_cm_property(output, drmmode_crtc,
 							  cm_prop_id);
 		if (ret) {
@@ -3289,8 +3301,9 @@ drmmode_page_flip_target_relative(AMDGPUEntPtr pAMDGPUEnt,
  *    AMD hardware.
  *
  * If the cached ID's are all 0 after calling this function, then color
- * management is not supported. For short, checking if the gamma LUT size
- * property ID == 0 is sufficient.
+ * management is not supported. The main important check during initialization
+ * is, if gamma_lut_size and degamma_lut_size values are not valid, then expose
+ * the corresponding gamma_lut and degamma_lut are not supported by the hardware.
  *
  * This should be called before CRTCs are initialized within pre_init, as the
  * cached values will be used there.
@@ -3305,8 +3318,8 @@ static void drmmode_cm_init(int drm_fd, drmmode_ptr drmmode,
 	drmModeObjectPropertiesPtr drm_props;
 	drmModePropertyPtr drm_prop;
 	enum drmmode_cm_prop cm_prop;
-	uint32_t cm_enabled = 0;
-	uint32_t cm_all_enabled = (1 << CM_NUM_PROPS) - 1;
+	Bool use_degamma_lut = false;
+	Bool use_gamma_lut = false;
 	int i;
 
 	memset(drmmode->cm_prop_ids, 0, sizeof(drmmode->cm_prop_ids));
@@ -3334,25 +3347,34 @@ static void drmmode_cm_init(int drm_fd, drmmode_ptr drmmode,
 		if (cm_prop == CM_INVALID_PROP)
 			continue;
 
-		if (cm_prop == CM_DEGAMMA_LUT_SIZE)
+		if (cm_prop == CM_DEGAMMA_LUT_SIZE) {
 			drmmode->degamma_lut_size = drm_props->prop_values[i];
-		else if (cm_prop == CM_GAMMA_LUT_SIZE)
+			if (drmmode->degamma_lut_size != 0)
+				use_degamma_lut = true;
+		} else if (cm_prop == CM_GAMMA_LUT_SIZE) {
 			drmmode->gamma_lut_size = drm_props->prop_values[i];
+			if (drmmode->gamma_lut_size != 0)
+				use_gamma_lut = true;
+		}
 
 		drmmode->cm_prop_ids[cm_prop] = drm_props->props[i];
-		cm_enabled |= 1 << cm_prop;
 
 		drmModeFreeProperty(drm_prop);
 	}
+
+	/* If the gamma_lut_size is not valid, then expose
+	 * gamma_lut is not supported by the hw
+	 */
+	if (!use_gamma_lut)
+		drmmode->cm_prop_ids[CM_GAMMA_LUT] = 0;
+
+	/* If the degamma_lut_size is not valid, then expose
+	 * degamma_lut is not supported by the hw
+	 */
+	if (!use_degamma_lut)
+		drmmode->cm_prop_ids[CM_DEGAMMA_LUT] = 0;
+
 	drmModeFreeObjectProperties(drm_props);
-
-	/* cm is enabled only if all prop ids are found */
-	if (cm_enabled == cm_all_enabled)
-		return;
-
-	/* Otherwise, disable DDX cm support */
-	memset(drmmode->cm_prop_ids, 0, sizeof(drmmode->cm_prop_ids));
-	drmmode->gamma_lut_size = drmmode->degamma_lut_size = 0;
 }
 
 Bool drmmode_pre_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int cpp)
@@ -3399,7 +3421,7 @@ Bool drmmode_pre_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, int cpp)
 	drmmode_cm_init(pAMDGPUEnt->fd, drmmode, mode_res);
 
 	/* Spare the server the effort to compute and update unused CLUTs. */
-	if (pScrn->depth == 30 && !drmmode_cm_enabled(drmmode))
+	if (pScrn->depth == 30 && !drmmode_cm_prop_supported(drmmode, CM_GAMMA_LUT))
 		info->drmmode_crtc_funcs.gamma_set = NULL;
 
 	for (i = 0; i < mode_res->count_crtcs; i++) {
@@ -3702,7 +3724,7 @@ Bool drmmode_setup_colormap(ScreenPtr pScreen, ScrnInfoPtr pScrn)
 			return FALSE;
 
 		if (pScrn->depth == 30) {
-			if (!drmmode_cm_enabled(&info->drmmode))
+			if (!drmmode_cm_prop_supported(&info->drmmode, CM_GAMMA_LUT))
 				return TRUE;
 
 			for (i = 0; i < xf86_config->num_crtc; i++) {
