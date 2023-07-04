@@ -1264,6 +1264,9 @@ drmmode_set_mode(xf86CrtcPtr crtc, struct drmmode_fb *fb, DisplayModePtr mode,
 		if (output->crtc != crtc)
 			continue;
 
+		if (!drmmode_output->mode_output)
+			return FALSE;
+
 		output_ids[output_count] = drmmode_output->mode_output->connector_id;
 		output_count++;
 	}
