@@ -1264,8 +1264,10 @@ drmmode_set_mode(xf86CrtcPtr crtc, struct drmmode_fb *fb, DisplayModePtr mode,
 		if (output->crtc != crtc)
 			continue;
 
-		if (!drmmode_output->mode_output)
-			return FALSE;
+		if (!drmmode_output->mode_output) {
+			ret = FALSE;
+			goto out;
+		}
 
 		output_ids[output_count] = drmmode_output->mode_output->connector_id;
 		output_count++;
@@ -1285,6 +1287,7 @@ drmmode_set_mode(xf86CrtcPtr crtc, struct drmmode_fb *fb, DisplayModePtr mode,
 			   "failed to set mode: %s\n", strerror(errno));
 	}
 
+out:
 	free(output_ids);
 	return ret;
 }
