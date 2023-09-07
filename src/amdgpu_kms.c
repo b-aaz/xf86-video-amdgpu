@@ -1655,6 +1655,10 @@ Bool AMDGPUPreInit_KMS(ScrnInfoPtr pScrn, int flags)
 			from = xf86GetOptValBool(info->Options, OPTION_VARIABLE_REFRESH,
 						 &info->vrr_support) ? X_CONFIG : X_DEFAULT;
 
+			if (info->vrr_support && !info->tear_free)
+				xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+					   "Enabling VariableRefresh while TearFree is disabled can cause instability!\n");
+
 			xf86DrvMsg(pScrn->scrnIndex, from, "VariableRefresh: %sabled\n",
 				   info->vrr_support ? "en" : "dis");
 

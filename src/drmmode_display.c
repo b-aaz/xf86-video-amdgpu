@@ -593,6 +593,7 @@ drmmode_crtc_update_tear_free(xf86CrtcPtr crtc)
 		    (drmmode_output->tear_free == 2 &&
 		     (crtc->scrn->pScreen->isGPU ||
 		      info->shadow_primary ||
+		      info->vrr_support ||
 		      crtc->transformPresent || crtc->rotation != RR_Rotate_0))) {
 			drmmode_crtc->tear_free = TRUE;
 			return;
