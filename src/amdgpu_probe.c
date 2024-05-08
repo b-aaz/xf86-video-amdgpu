@@ -277,7 +277,7 @@ amdgpu_probe(ScrnInfoPtr pScrn, int entity_num,
 	pPriv = xf86GetEntityPrivate(pEnt->index, gAMDGPUEntityIndex);
 
 	if (!pPriv->ptr) {
-		pPriv->ptr = xnfcalloc(sizeof(AMDGPUEntRec), 1);
+		pPriv->ptr = XNFcallocarray(sizeof(AMDGPUEntRec), 1);
 		if (!pPriv->ptr)
 			goto error;
 

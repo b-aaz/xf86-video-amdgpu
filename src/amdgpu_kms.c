@@ -245,7 +245,7 @@ static Bool AMDGPUGetRec(ScrnInfoPtr pScrn)
 	if (pScrn->driverPrivate)
 		return TRUE;
 
-	pScrn->driverPrivate = xnfcalloc(sizeof(AMDGPUInfoRec), 1);
+	pScrn->driverPrivate = XNFcallocarray(sizeof(AMDGPUInfoRec), 1);
 	return TRUE;
 }
 
