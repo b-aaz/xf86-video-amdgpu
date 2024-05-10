@@ -46,57 +46,20 @@ container-build:
   script:
   - ./autogen.sh
   - make -j$(nproc) check V=1
+  - make install V=1
+  - make -j$(nproc) distcheck
   variables:
     CFLAGS: "-pipe -g -O2 -Werror"
     ACLOCAL_PATH: /usr/local/xserver-$XSERVER_VERSION/share/aclocal
     PKG_CONFIG_PATH: /usr/local/xserver-$XSERVER_VERSION/lib/pkgconfig
 
-xserver-21.1:
+linux:
   extends: .default_build
-  script:
-  - ./autogen.sh
-  - make -j$(nproc) check V=1
-  - make install V=1
-  - make -j$(nproc) distcheck
-  variables:
-    XSERVER_VERSION: "21.1"
+  parallel:
+    matrix:
+      - XSERVER_VERSION: ["1.18", "1.19", "1.20", "21.1"]
 
-xserver-21.1-clang:
-  extends: .default_build
-  variables:
-    CC: clang
-    XSERVER_VERSION: "21.1"
-
-xserver-1.20:
-  extends: .default_build
-  variables:
-    XSERVER_VERSION: "1.20"
-
-xserver-1.20-clang:
-  extends: .default_build
-  variables:
-    CC: clang
-    XSERVER_VERSION: "1.20"
-
-xserver-1.18:
-  extends: .default_build
-  script:
-  - ./autogen.sh --disable-glamor
-  - make -j$(nproc) check V=1
-  variables:
-    XSERVER_VERSION: "1.18"
-
-xserver-1.18-clang:
-  extends: xserver-1.18
-  variables:
-    CC: clang
-
-xserver-1.19:
-  extends: .default_build
-  variables:
-    XSERVER_VERSION: "1.19"
-
-xserver-1.19-clang:
-  extends: xserver-1.19
+linux-clang:
+  extends: linux
   variables:
     CC: clang
