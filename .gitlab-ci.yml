@@ -77,36 +77,11 @@ xserver-1.20-clang:
     CC: clang
     XSERVER_VERSION: "1.20"
 
-xserver-1.13:
+xserver-1.18:
   extends: .default_build
   script:
   - ./autogen.sh --disable-glamor
   - make -j$(nproc) check V=1
-  variables:
-    XSERVER_VERSION: "1.13"
-
-xserver-1.14:
-  extends: xserver-1.13
-  variables:
-    XSERVER_VERSION: "1.14"
-
-xserver-1.15:
-  extends: xserver-1.14
-  variables:
-    XSERVER_VERSION: "1.15"
-
-xserver-1.16:
-  extends: .default_build
-  variables:
-    XSERVER_VERSION: "1.16"
-
-xserver-1.17:
-  extends: .default_build
-  variables:
-    XSERVER_VERSION: "1.17"
-
-xserver-1.18:
-  extends: .default_build
   variables:
     XSERVER_VERSION: "1.18"
 
