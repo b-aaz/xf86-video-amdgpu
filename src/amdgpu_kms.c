@@ -1521,11 +1521,7 @@ static void amdgpu_determine_cursor_size(int fd, AMDGPUInfoPtr info)
 }
 
 /* When the root window is mapped, set the initial modes */
-void AMDGPUWindowExposures_oneshot(WindowPtr pWin, RegionPtr pRegion
-#if XORG_VERSION_CURRENT < XORG_VERSION_NUMERIC(1,16,99,901,0)
-				   , RegionPtr pBSRegion
-#endif
-				   )
+void AMDGPUWindowExposures_oneshot(WindowPtr pWin, RegionPtr pRegion)
 {
 	ScreenPtr pScreen = pWin->drawable.pScreen;
 	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
@@ -1535,11 +1531,7 @@ void AMDGPUWindowExposures_oneshot(WindowPtr pWin, RegionPtr pRegion
 		ErrorF("%s called for non-root window %p\n", __func__, pWin);
 
 	pScreen->WindowExposures = info->WindowExposures;
-#if XORG_VERSION_CURRENT < XORG_VERSION_NUMERIC(1,16,99,901,0)
-	pScreen->WindowExposures(pWin, pRegion, pBSRegion);
-#else
 	pScreen->WindowExposures(pWin, pRegion);
-#endif
 
 	amdgpu_glamor_finish(pScrn);
 	drmmode_set_desired_modes(pScrn, &info->drmmode, TRUE);
