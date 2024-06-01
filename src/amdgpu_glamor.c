@@ -357,7 +357,9 @@ amdgpu_glamor_share_pixmap_backing(PixmapPtr pixmap, ScreenPtr secondary,
 
 	tiling_info = amdgpu_pixmap_get_tiling_info(pixmap);
 
-	if (info->family >= AMDGPU_FAMILY_AI)
+	if (info->family >= AMDGPU_FAMILY_GC_12_0_0)
+		is_linear = AMDGPU_TILING_GET(tiling_info, GFX12_SWIZZLE_MODE) == 0;
+	else if (info->family >= AMDGPU_FAMILY_AI)
 		is_linear = AMDGPU_TILING_GET(tiling_info, SWIZZLE_MODE) == 0;
 	else
 		is_linear = AMDGPU_TILING_GET(tiling_info, ARRAY_MODE) == 1;
