@@ -3,7 +3,7 @@
 set -e
 set -o xtrace
 
-echo 'deb-src https://deb.debian.org/debian testing main' >/etc/apt/sources.list.d/deb-src.list
+echo 'deb-src https://deb.debian.org/debian bookworm main' >/etc/apt/sources.list.d/deb-src.list
 apt-get update
 apt-get install -y git ca-certificates build-essential automake autoconf libtool pkg-config
 
