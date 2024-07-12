@@ -4,6 +4,8 @@ set -e
 set -o xtrace
 
 echo 'deb-src https://deb.debian.org/debian bookworm main' >/etc/apt/sources.list.d/deb-src.list
+echo "deb [trusted=yes] https://gitlab.freedesktop.org/gfx-ci/ci-deb-repo/-/raw/${PKG_REPO_REV}/ ${FDO_DISTRIBUTION_VERSION%-*} main" | tee /etc/apt/sources.list.d/gfx-ci_.list
+
 apt-get update
 apt-get install -y git ca-certificates build-essential automake autoconf libtool pkg-config
 
