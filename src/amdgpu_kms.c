@@ -2338,8 +2338,7 @@ void AMDGPULeaveVT_KMS(ScrnInfoPtr pScrn)
 						}
 					}
 				}
-
-				pScreen->DestroyPixmap(black_scanout);
+				dixDestroyPixmap(black_scanout, 0);
 			}
 		}
 

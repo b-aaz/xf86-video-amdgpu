@@ -240,7 +240,7 @@ drmmode_crtc_scanout_destroy(PixmapPtr *scanout)
 	if (!*scanout)
 		return;
 
-	(*scanout)->drawable.pScreen->DestroyPixmap(*scanout);
+	dixDestroyPixmap(*scanout, 0);
 	(*scanout) = NULL;
 }
 

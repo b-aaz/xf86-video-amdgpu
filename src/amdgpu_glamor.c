@@ -157,7 +157,7 @@ static Bool amdgpu_glamor_destroy_pixmap(PixmapPtr pixmap)
 #ifndef HAVE_GLAMOR_EGL_DESTROY_TEXTURED_PIXMAP
 	ScreenPtr screen = pixmap->drawable.pScreen;
 	AMDGPUInfoPtr info = AMDGPUPTR(xf86ScreenToScrn(screen));
-	Bool ret;
+	Bool ret = TRUE;
 #endif
 
 	if (pixmap->refcnt == 1) {
@@ -179,7 +179,8 @@ static Bool amdgpu_glamor_destroy_pixmap(PixmapPtr pixmap)
 	return TRUE;
 #else
 	screen->DestroyPixmap = info->glamor.SavedDestroyPixmap;
-	ret = screen->DestroyPixmap(pixmap);
+	if (screen->DestroyPixmap)
+		ret = screen->DestroyPixmap(pixmap);
 	info->glamor.SavedDestroyPixmap = screen->DestroyPixmap;
 	screen->DestroyPixmap = amdgpu_glamor_destroy_pixmap;
 
@@ -337,7 +338,7 @@ amdgpu_glamor_set_pixmap_bo(DrawablePtr drawable, PixmapPtr pixmap)
 				   0, 0, pixmap->devKind, NULL);
 	old->devPrivate.ptr = NULL;
 
-	screen->DestroyPixmap(pixmap);
+	dixDestroyPixmap(pixmap, 0);
 
 	return old;
 }
