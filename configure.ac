@@ -185,6 +185,11 @@ AC_CHECK_DECL(GBM_BO_USE_LINEAR,
 	      [#include <stdlib.h>
 	       #include <gbm.h>])
 
+AC_CHECK_DECL(GBM_BO_USE_FRONT_RENDERING,
+	      [AC_DEFINE(HAVE_GBM_BO_USE_FRONT_RENDERING, 1, [Have GBM_BO_USE_FRONT_RENDERING])], [],
+	      [#include <stdlib.h>
+	       #include <gbm.h>])
+
 AC_CHECK_HEADERS([misyncshm.h], [], [],
                  [#include <X11/Xdefs.h>
 	          #include <X11/Xfuncproto.h>

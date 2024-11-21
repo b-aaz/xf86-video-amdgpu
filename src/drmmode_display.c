@@ -2897,7 +2897,7 @@ static Bool drmmode_xf86crtc_resize(ScrnInfoPtr scrn, int width, int height)
 	int i, pitch, old_width, old_height, old_pitch;
 	int cpp = info->pixel_bytes;
 	PixmapPtr ppix = screen->GetScreenPixmap(screen);
-	int hint = AMDGPU_CREATE_PIXMAP_SCANOUT;
+	int hint = AMDGPU_CREATE_PIXMAP_SCANOUT | AMDGPU_CREATE_PIXMAP_FRONT;
 	void *fb_shadow;
 
 	if (scrn->virtualX == width && scrn->virtualY == height)
