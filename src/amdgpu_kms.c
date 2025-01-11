@@ -75,20 +75,20 @@ static int (*saved_delete_property) (ClientPtr client);
 static Bool amdgpu_setup_kernel_mem(ScreenPtr pScreen);
 
 const OptionInfoRec AMDGPUOptions_KMS[] = {
-	{OPTION_ACCEL, "Accel", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_PAGE_FLIP, "EnablePageFlip", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_SUBPIXEL_ORDER, "SubPixelOrder", OPTV_ANYSTR, {0}, FALSE},
-	{OPTION_ZAPHOD_HEADS, "ZaphodHeads", OPTV_STRING, {0}, FALSE},
-	{OPTION_ACCEL_METHOD, "AccelMethod", OPTV_STRING, {0}, FALSE},
-	{OPTION_DRI3, "DRI3", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_DRI, "DRI", OPTV_INTEGER, {0}, FALSE},
-	{OPTION_SHADOW_PRIMARY, "ShadowPrimary", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_TEAR_FREE, "TearFree", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_DELETE_DP12, "DeleteUnusedDP12Displays", OPTV_BOOLEAN, {0}, FALSE},
-	{OPTION_VARIABLE_REFRESH, "VariableRefresh", OPTV_BOOLEAN, {0}, FALSE },
-	{OPTION_ASYNC_FLIP_SECONDARIES, "AsyncFlipSecondaries", OPTV_BOOLEAN, {0}, FALSE},
-	{-1, NULL, OPTV_NONE, {0}, FALSE}
+	{OPTION_ACCEL, "Accel", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_PAGE_FLIP, "EnablePageFlip", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_SUBPIXEL_ORDER, "SubPixelOrder", OPTV_ANYSTR, .value = {0}, FALSE},
+	{OPTION_ZAPHOD_HEADS, "ZaphodHeads", OPTV_STRING, .value = {0}, FALSE},
+	{OPTION_ACCEL_METHOD, "AccelMethod", OPTV_STRING, .value = {0}, FALSE},
+	{OPTION_DRI3, "DRI3", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_DRI, "DRI", OPTV_INTEGER, .value = {0}, FALSE},
+	{OPTION_SHADOW_PRIMARY, "ShadowPrimary", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_TEAR_FREE, "TearFree", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_DELETE_DP12, "DeleteUnusedDP12Displays", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{OPTION_VARIABLE_REFRESH, "VariableRefresh", OPTV_BOOLEAN, .value = {0}, FALSE },
+	{OPTION_ASYNC_FLIP_SECONDARIES, "AsyncFlipSecondaries", OPTV_BOOLEAN, .value = {0}, FALSE},
+	{-1, NULL, OPTV_NONE, .value = {0}, FALSE}
 };
 
 const OptionInfoRec *AMDGPUOptionsWeak(void)
