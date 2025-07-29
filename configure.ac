@@ -137,11 +137,6 @@ else
 fi
 AM_CONDITIONAL(GLAMOR, test x$GLAMOR != xno)
 
-AC_CHECK_DECL(GBM_BO_USE_FRONT_RENDERING,
-	      [AC_DEFINE(HAVE_GBM_BO_USE_FRONT_RENDERING, 1, [Have GBM_BO_USE_FRONT_RENDERING])], [],
-	      [#include <stdlib.h>
-	       #include <gbm.h>])
-
 AC_CHECK_HEADERS([dri3.h], [], [],
 		 [#include <X11/Xmd.h>
 		 #include <xorg-server.h>])
